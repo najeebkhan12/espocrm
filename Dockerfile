@@ -4,7 +4,7 @@
 # PLEASE DO NOT EDIT IT DIRECTLY.
 #
 
-FROM php:8.4-fpm-trixie
+FROM php:8.4-apache-trixie
 
 LABEL org.opencontainers.image.source=https://github.com/najeebkhan12/espocrm
 LABEL org.opencontainers.image.description="EspoCRM is a free and open-source CRM platform."
@@ -117,28 +117,32 @@ WORKDIR /var/www/html
 
 COPY . /var/www/html/
 
-RUN composer --version
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && npm --version \
+    && node --version
 
-RUN composer install \
-    --no-dev \
-    --prefer-dist \
-    --no-interaction \
-    --optimize-autoloader
+RUN npm install
+
+RUN npm run build
 
 RUN set -eux; \
     rm -rf /usr/src/espocrm; \
     mkdir -p /usr/src/espocrm; \
     cp -a ./client/ /usr/src/espocrm/; \
     cp -a ./public/ /usr/src/espocrm/; \
+    cp ./000-default.conf /etc/apache2/sites-available/000-default.conf; \
     rm -rf ./install; \
     find . -type d -exec chmod 755 {} +; \
     find . -type f -exec chmod 644 {} +; \
     chown -R root:root . /usr/src/espocrm; \
     chown -R www-data:www-data ./data ./custom ./client/custom; \
-    chmod +x ./bin/command
+    chmod +x ./bin/command; \
+    a2enmod rewrite; \
+    service apache2 restart
 
 COPY ./docker-*.sh ./entrypoint-utils.sh /usr/local/bin/
 
 ENTRYPOINT [ "docker-entrypoint.sh" ]
 
-CMD ["php-fpm"]
+CMD ["apache2-foreground"]
