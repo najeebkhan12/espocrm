@@ -43,7 +43,7 @@ services:
       timeout: 20s
       retries: 3
     ports:
-      - 8080:80
+      - ${ESPOCRM_PORT}:80
 
   espocrm-daemon:
     image: ${ESPOCRM_IMAGE}
