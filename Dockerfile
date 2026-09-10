@@ -126,6 +126,11 @@ RUN npm install
 
 RUN npm run build
 
+# Stamp the release version into default config (grunt replace only does this for build/ packages).
+RUN set -eux; \
+    version="$(node -p "require('./package.json').version")"; \
+    sed -i "s/'@@version'/'${version}'/" application/Espo/Resources/defaults/config.php
+
 RUN set -eux; \
     rm -rf /usr/src/espocrm; \
     mkdir -p /usr/src/espocrm; \
