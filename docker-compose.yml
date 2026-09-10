@@ -19,7 +19,7 @@ services:
       retries: 3
 
   espocrm:
-    image: dcespo:latest
+    image: ${ESPOCRM_IMAGE}
     container_name: espocrm
     environment:
       ESPOCRM_DATABASE_HOST: ${ESPOCRM_DATABASE_HOST}
